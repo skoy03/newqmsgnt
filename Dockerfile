@@ -42,7 +42,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /usr/src/app
 
-RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://ghfast.top/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v$(curl https://ghfast.top/https://raw.githubusercontent.com/1244453393/QmsgNtClient-NapCatQQ/refs/heads/main/package.json | grep '"version":' | sed -E 's/.*([0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}).*/\1/')/QmsgNtClient-NapCatQQ.zip
+RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v$(curl https://fastly.jsdelivr.net/gh/1244453393/QmsgNtClient-NapCatQQ@main/package.json | grep '"version":' | sed -E 's/.*([0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}).*/\1/')/QmsgNtClient-NapCatQQ.zip
 
 RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d ./QmsgNtClient-NapCatQQ
 RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d /tmp/QmsgNtClient-NapCatQQ
