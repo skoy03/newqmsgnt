@@ -1,4 +1,4 @@
-FROM node:20.12
+FROM dockerproxy.net/library/node:20.12
 MAINTAINER DIEYI from NapCatQQ
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
