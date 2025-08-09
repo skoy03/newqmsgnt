@@ -63,4 +63,6 @@ VOLUME /usr/src/app/QmsgNtClient-NapCatQQ/config
 VOLUME /usr/src/app/QmsgNtClient-NapCatQQ/logs
 VOLUME /root/.config/QQ
 
+EXPOSE 6099
+
 ENTRYPOINT ["bash", "start.sh"]
