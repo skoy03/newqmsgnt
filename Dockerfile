@@ -2,6 +2,7 @@ FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12
 MAINTAINER DIEYI from NapCatQQ
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
+ENV ACCOUNT=
 RUN echo 'Acquire::https::Verify-Peer "false";' >> /etc/apt/apt.conf.d/99noverify
 COPY sources.list /etc/apt/sources.list
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
