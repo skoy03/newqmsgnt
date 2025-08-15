@@ -3,39 +3,43 @@ MAINTAINER DIEYI from NapCatQQ
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ACCOUNT=
-RUN echo 'sslverify=false' >> /etc/dnf/dnf.conf
-COPY sources.list /etc/yum.repos.d/
+RUN echo 'Acquire::https::Verify-Peer "false";' >> /etc/apt/apt.conf.d/99noverify
+COPY sources.list /etc/apt/sources.list
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-
-# 使用dnf安装软件包
-RUN dnf install -y \
-    nss \
-    libnotify \
-    libsecret \
-    gbm \
-    alsa-lib \
-    wqy-zenhei-fonts \
-    gnutls \
-    glib2-devel \
-    dbus-libs \
-    gtk3 \
-    libXScrnSaver \
-    libXtst \
-    at-spi2-core \
-    libX11-xcb \
+# 安装必要的软件包
+RUN apt-get update && apt-get install -y \
+    libnss3 \
+    libnotify4 \
+    libsecret-1-0 \
+    libgbm1 \
+    libasound2 \
+    fonts-wqy-zenhei \
+    gnutls-bin \
+    libglib2.0-dev \
+    libdbus-1-3 \
+    libgtk-3-0 \
+    libxss1 \
+    libxtst6 \
+    libatspi2.0-0 \
+    libx11-xcb1 \
     ffmpeg \
     unzip \
     openbox \
-    xorg-x11-server-Xorg \
+    xorg \
     dbus-user-session \
-    xorg-x11-server-Xvfb \
+    xvfb \
     supervisor \
     xdg-utils \
     git \
     fluxbox \
     curl && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf /tmp/* /var/tmp/*
+    apt-get clean --no-install-recommends && \
+    apt autoremove -y && \
+    apt clean && \
+    rm -rf \
+    /var/lib/apt/lists/* \
+    /tmp/* \
+    /var/tmp/*
 
 WORKDIR /usr/src/app
 
@@ -47,8 +51,8 @@ RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d /tmp/QmsgNtClient-NapCatQQ
 COPY start.sh ./start.sh
 
 RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-    curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/a5519e17/linuxqq_3.2.15-31363_${arch}.rpm && \
-    dpkg -i --force-depends linuxqq.rpm && rm linuxqq.rpm && \
+    curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/a5519e17/linuxqq_3.2.15-31363_${arch}.deb && \
+    dpkg -i --force-depends linuxqq.deb && rm linuxqq.deb && \
     chmod +x start.sh && \
     echo "(async () => {await import('file:///usr/src/app/QmsgNtClient-NapCatQQ/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js && \
     sed -i 's|"main": "[^"]*"|"main": "./loadNapCat.js"|' /opt/QQ/resources/app/package.json
