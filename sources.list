@@ -1,4 +1,4 @@
-rpm https://mirrors.tuna.tsinghua.edu.cn/centos-stream/ bookworm main contrib non-free non-free-firmware
-rpm https://mirrors.tuna.tsinghua.edu.cn/centos-stream/ bookworm-updates main contrib non-free non-free-firmware
-rpm https://mirrors.tuna.tsinghua.edu.cn/centos-stream/ bookworm-backports main contrib non-free non-free-firmware
-#deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
