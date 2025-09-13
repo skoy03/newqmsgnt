@@ -51,7 +51,7 @@ RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d /tmp/QmsgNtClient-NapCatQQ
 COPY start.sh ./start.sh
 
 RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-    curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/a5519e17/linuxqq_3.2.15-31363_${arch}.deb && \
+    curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/c773cdf7/linuxqq_3.2.19-39038_${arch}.deb && \
     dpkg -i --force-depends linuxqq.deb && rm linuxqq.deb && \
     chmod +x start.sh && \
     echo "(async () => {await import('file:///usr/src/app/QmsgNtClient-NapCatQQ/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js && \
