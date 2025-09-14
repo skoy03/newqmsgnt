@@ -1,8 +1,6 @@
-FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12
-MAINTAINER DIEYI from NapCatQQ
+FROM node:20.12
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
-ENV ACCOUNT=
 RUN echo 'Acquire::https::Verify-Peer "false";' >> /etc/apt/apt.conf.d/99noverify
 COPY sources.list /etc/apt/sources.list
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
@@ -43,7 +41,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /usr/src/app
 
-RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://gh-proxy.com/github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v$(curl https://fastly.jsdelivr.net/gh/1244453393/QmsgNtClient-NapCatQQ@main/package.json | grep '"version":' | sed -E 's/.*([0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}).*/\1/')/QmsgNtClient-NapCatQQ.zip
+RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://gh-proxy.com/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v$(curl https://fastly.jsdelivr.net/gh/1244453393/QmsgNtClient-NapCatQQ@main/package.json | grep '"version":' | sed -E 's/.*([0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}).*/\1/')/QmsgNtClient-NapCatQQ.zip
 
 RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d ./QmsgNtClient-NapCatQQ
 RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d /tmp/QmsgNtClient-NapCatQQ
@@ -62,7 +60,5 @@ RUN cd ./QmsgNtClient-NapCatQQ && npm config set registry https://registry.npmmi
 VOLUME /usr/src/app/QmsgNtClient-NapCatQQ/config
 VOLUME /usr/src/app/QmsgNtClient-NapCatQQ/logs
 VOLUME /root/.config/QQ
-
-EXPOSE 6099
 
 ENTRYPOINT ["bash", "start.sh"]
