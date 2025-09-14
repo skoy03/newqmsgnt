@@ -1,4 +1,4 @@
-FROM node:20.13
+FROM node:20.12
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'Acquire::https::Verify-Peer "false";' >> /etc/apt/apt.conf.d/99noverify
