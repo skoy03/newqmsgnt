@@ -11,7 +11,7 @@ REPO_API = "https://api.github.com/repos/1244453393/QmsgNtClient-NapCatQQ/releas
 TARGET_FILE = "Linux-Docker.zip"
 REPO_PATH = "."  # 当前仓库路径
 TEMP_DIR = "temp_download"
-DOCKER_FILES = ["Dockerfile", "update.py","sources.list","start.sh","README.md"]  # 需要保留的Docker相关文件
+DOCKER_FILES = ["Dockerfile", "update.py","sources.list","start.sh","README.md","update.yml"]  # 需要保留的Docker相关文件
 CHANGELOG_FILE = "README.md"  # 更新日志文件
 
 def get_latest_release():
