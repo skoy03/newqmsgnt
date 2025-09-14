@@ -31,20 +31,39 @@ def get_latest_release():
 
 def download_and_extract(url):
     """下载并解压文件"""
-    if not os.path.exists(TEMP_DIR):
-        os.makedirs(TEMP_DIR)
-    
-    # 下载文件
-    response = requests.get(url)
-    zip_path = os.path.join(TEMP_DIR, TARGET_FILE)
-    with open(zip_path, "wb") as f:
-        f.write(response.content)
-    
-    # 解压文件
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        zip_ref.extractall(TEMP_DIR)
-    
-    return os.path.join(TEMP_DIR, os.path.splitext(TARGET_FILE)[0])
+    try:
+        if not os.path.exists(TEMP_DIR):
+            os.makedirs(TEMP_DIR)
+        
+        # 下载文件
+        print(f"Downloading {url}...")
+        response = requests.get(url)
+        response.raise_for_status()  # 检查HTTP错误
+        
+        zip_path = os.path.join(TEMP_DIR, TARGET_FILE)
+        with open(zip_path, "wb") as f:
+            f.write(response.content)
+        
+        # 解压文件
+        print(f"Extracting {zip_path}...")
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            # 获取zip文件中的根目录名
+            root_dir = os.path.commonprefix(zip_ref.namelist()).rstrip('/')
+            if not root_dir:  # 如果zip文件没有根目录
+                root_dir = os.path.splitext(TARGET_FILE)[0]
+            zip_ref.extractall(TEMP_DIR)
+        
+        extracted_dir = os.path.join(TEMP_DIR, root_dir)
+        if not os.path.exists(extracted_dir):
+            raise FileNotFoundError(f"Extracted directory not found: {extracted_dir}")
+            
+        return extracted_dir
+        
+    except Exception as e:
+        # 清理临时文件
+        if os.path.exists(TEMP_DIR):
+            shutil.rmtree(TEMP_DIR)
+        raise e
 
 def update_repository(extracted_dir, release_info):
     """更新仓库文件"""
