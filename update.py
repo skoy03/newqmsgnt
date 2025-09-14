@@ -67,42 +67,26 @@ def download_and_extract(url):
 
 def update_repository(extracted_dir, release_info):
     """更新仓库文件"""
-    # 检查是否有实际更新
     has_update = False
     
-    # 删除旧文件（保留Docker相关文件和更新日志）
-    for item in os.listdir(REPO_PATH):
-        if item not in DOCKER_FILES + [".git", TEMP_DIR, CHANGELOG_FILE]:
-            item_path = os.path.join(REPO_PATH, item)
-            if os.path.isfile(item_path):
-                os.remove(item_path)
-                has_update = True
-            elif os.path.isdir(item_path):
-                shutil.rmtree(item_path)
-                has_update = True
+    # 检查并更新Dockerfile
+    src_dockerfile = os.path.join(extracted_dir, "Dockerfile")
+    dst_dockerfile = os.path.join(REPO_PATH, "Dockerfile")
     
-    # 复制新文件
-    for item in os.listdir(extracted_dir):
-        src = os.path.join(extracted_dir, item)
-        dst = os.path.join(REPO_PATH, item)
+    if os.path.exists(src_dockerfile):
+        # 检查文件内容是否相同
+        if os.path.exists(dst_dockerfile):
+            with open(src_dockerfile, 'rb') as f1, open(dst_dockerfile, 'rb') as f2:
+                if f1.read() == f2.read():
+                    print("Dockerfile is up to date, no changes needed.")
+                    return False
         
-        # 检查文件是否已存在且内容相同
-        if os.path.exists(dst):
-            if os.path.isfile(src) and os.path.isfile(dst):
-                with open(src, 'rb') as f1, open(dst, 'rb') as f2:
-                    if f1.read() == f2.read():
-                        continue
-        
-        if os.path.isfile(src):
-            shutil.copy2(src, dst)
-            has_update = True
-        elif os.path.isdir(src):
-            shutil.copytree(src, dst)
-            has_update = True
-    
-    # 更新日志
-    if has_update:
-        update_changelog(release_info)
+        # 复制新Dockerfile
+        shutil.copy2(src_dockerfile, dst_dockerfile)
+        has_update = True
+        print("Dockerfile updated successfully.")
+    else:
+        print("No Dockerfile found in the downloaded package.")
     
     # 清理临时文件
     shutil.rmtree(TEMP_DIR)
