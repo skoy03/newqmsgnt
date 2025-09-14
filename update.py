@@ -74,17 +74,29 @@ def update_repository(extracted_dir, release_info):
     dst_dockerfile = os.path.join(REPO_PATH, "Dockerfile")
     
     if os.path.exists(src_dockerfile):
-        # 检查文件内容是否相同
+        # 读取源文件内容
+        with open(src_dockerfile, 'r') as f:
+            content = f.read()
+        
+        # 替换镜像源
+        modified_content = content.replace(
+            "FROM node:20.12", 
+            "FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12"
+        )
+        
+        # 检查是否需要更新
         if os.path.exists(dst_dockerfile):
-            with open(src_dockerfile, 'rb') as f1, open(dst_dockerfile, 'rb') as f2:
-                if f1.read() == f2.read():
+            with open(dst_dockerfile, 'r') as f:
+                if f.read() == modified_content:
                     print("Dockerfile is up to date, no changes needed.")
                     return False
         
-        # 复制新Dockerfile
-        shutil.copy2(src_dockerfile, dst_dockerfile)
+        # 写入修改后的内容
+        with open(dst_dockerfile, 'w') as f:
+            f.write(modified_content)
+        
         has_update = True
-        print("Dockerfile updated successfully.")
+        print("Dockerfile updated successfully with custom image source.")
     else:
         print("No Dockerfile found in the downloaded package.")
     
