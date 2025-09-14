@@ -129,8 +129,16 @@ def git_commit_and_push(release_info):
     repo = Repo(REPO_PATH)
     repo.git.add("--all")
     repo.index.commit(f"Auto update to {release_info['tag_name']}")
+    
+    # 确保使用正确的远程URL和认证
     origin = repo.remote(name="origin")
-    origin.push()
+    origin.set_url(f"https://x-access-token:{os.getenv('GITHUB_TOKEN')}@github.com/{os.getenv('GITHUB_REPOSITORY')}.git")
+    
+    try:
+        origin.push()
+    except Exception as e:
+        print(f"Push failed: {str(e)}")
+        raise
 
 def main():
     release_info = get_latest_release()
