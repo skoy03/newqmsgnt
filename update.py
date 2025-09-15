@@ -12,7 +12,7 @@ TARGET_FILE = "Linux-Docker.zip"
 REPO_PATH = "."  # 当前仓库路径
 TEMP_DIR = "temp_download"
 DOCKER_FILES = ["Dockerfile"]  # 需要保留的Docker相关文件
-CHANGELOG_FILE = "README.md"  # 更新日志文件
+VERSION_FILE = ".version"
 
 def get_latest_release():
     """获取最新发布的下载链接和版本信息"""
@@ -105,21 +105,6 @@ def update_repository(extracted_dir, release_info):
     
     return has_update
 
-def update_changelog(release_info):
-    """更新变更日志"""
-    changelog_path = os.path.join(REPO_PATH, CHANGELOG_FILE)
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    entry = f"## {release_info['tag_name']} ({current_date})\n\n{release_info['release_body']}\n\n"
-    
-    if os.path.exists(changelog_path):
-        with open(changelog_path, 'r+') as f:
-            content = f.read()
-            f.seek(0, 0)
-            f.write(entry + content)
-    else:
-        with open(changelog_path, 'w') as f:
-            f.write(entry)
-
 def git_commit_and_push(release_info):
     """提交更改到Git仓库"""
     repo = Repo(REPO_PATH)
@@ -136,14 +121,36 @@ def git_commit_and_push(release_info):
         print(f"Push failed: {str(e)}")
         raise
 
+def check_local_version():
+    """检查本地版本"""
+    version_file = os.path.join(REPO_PATH, ".version")
+    if os.path.exists(version_file):
+        with open(version_file, "r") as f:
+            return f.read().strip()
+    return None
+
+def update_local_version(tag_name):
+    """更新本地版本记录"""
+    version_file = os.path.join(REPO_PATH, ".version")
+    with open(version_file, "w") as f:
+        f.write(tag_name)
+
 def main():
     release_info = get_latest_release()
     if release_info:
         print(f"Found latest release: {release_info['tag_name']}")
+        
+        # 检查版本是否一致
+        local_version = check_local_version()
+        if local_version == release_info['tag_name']:
+            print("Local version is up to date, skipping update.")
+            return
+            
         extracted_dir = download_and_extract(release_info["download_url"])
         has_update = update_repository(extracted_dir, release_info)
         
         if has_update:
+            update_local_version(release_info['tag_name'])  # 更新本地版本记录
             git_commit_and_push(release_info)
             print("Update completed successfully!")
         else:
