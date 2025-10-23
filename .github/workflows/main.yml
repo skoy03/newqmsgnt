@@ -25,7 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests gitpython  # 安装脚本依赖包
       
-      - name: Run update script
+      - name: Run update.py
         run: python update.py  # 执行优化后的脚本
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 自动注入的令牌，无需手动创建
