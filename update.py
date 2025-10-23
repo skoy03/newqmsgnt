@@ -67,7 +67,7 @@ def write_version_file(version):
     try:
         with open(VERSION_FILE, "w", encoding="utf-8") as f:
             f.write(version.strip())
-        print(f"✅ 版本文件已生成：{VERSION_FILE}（版本：{version.strip()}）")
+        print(f"✅ 版本文件已生成：版本：{version.strip()}")
         return os.path.exists(VERSION_FILE)
     except Exception as e:
         print(f"❌ 写入版本文件失败：{str(e)}")
@@ -103,7 +103,7 @@ def write_log_file(cloud_info, result):
     try:
         with open(LOG_FILE, "w", encoding="utf-8") as f:
             f.write(log_content)
-        print(f"✅ 日志文件已生成：{LOG_FILE}")
+        print(f"✅ 日志文件已生成：update_log.txt")
         return os.path.exists(LOG_FILE)
     except Exception as e:
         print(f"❌ 写入日志文件失败：{str(e)}")
