@@ -249,7 +249,7 @@ def git_commit_push(cloud_tag):
                 print(f"⚠️ 跳过不存在的文件：{file}")
         
         # 4. 提交更改（包含版本号，便于追溯）
-        commit_msg = f"Auto sync to {cloud_tag}: update version + log + Dockerfile"
+        commit_msg = f"Auto update to {cloud_tag}"
         repo.index.commit(commit_msg)
         print(f"✅ Git 已提交：{commit_msg}")
         
