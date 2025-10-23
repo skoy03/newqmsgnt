@@ -202,7 +202,6 @@ def main():
     current_bj_time = utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")
     print("="*60)
     print(f"QmsgNtClient 版本同步脚本启动（运行时间：{current_bj_time}）")  # 这里已转换为北京时间
-    print(f"仓库根目录：{REPO_PATH}")
     print("="*60)
     
     cloud_info = get_cloud_version()
