@@ -180,7 +180,7 @@ def update_dockerfile(search_dir):
     # 写入更新后的 Dockerfile 到仓库目录
     with open(dst_docker, "w", encoding="utf-8") as f:
         f.write(modified_content)
-    print(f"✅ Dockerfile 已更新到仓库目录：{dst_docker}")
+    print(f"✅ Dockerfile 已更新到仓库目录：newqmsgnt/Dockerfile")
     return True
 
 
