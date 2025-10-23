@@ -9,10 +9,10 @@ from datetime import datetime
 # 配置信息
 REPO_API = "https://api.github.com/repos/1244453393/QmsgNtClient-NapCatQQ/releases/latest"
 TARGET_FILE = "Linux-Docker.zip"
-REPO_PATH = "."  # 强制使用当前工作目录（确保是仓库根目录）
+REPO_PATH = os.getcwd()  # 强制使用当前工作目录（确保是仓库根目录）
 TEMP_DIR = "temp_download"
-VERSION_FILE = "version.txt"
-LOG_FILE = "update_log.txt"
+VERSION_FILE = os.path.join(REPO_PATH, "version.txt")  # 绝对路径
+LOG_FILE = os.path.join(REPO_PATH, "update_log.txt")    # 绝对路径
 
 
 def ensure_file_permission(file_path):
