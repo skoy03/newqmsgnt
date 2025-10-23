@@ -151,7 +151,7 @@ def update_dockerfile(search_dir):
     for root, dirs, files in os.walk(search_dir):
         if "Dockerfile" in files:
             src_docker = os.path.join(root, "Dockerfile")
-            print(f"✅ 找到 Dockerfile：{src_docker}")
+            print(f"✅ 找到 Dockerfile：qmsgnt/Dockerfile")
             break  # 找到第一个即可（避免多个 Dockerfile 冲突）
     
     # 未找到 Dockerfile 的处理
@@ -259,7 +259,7 @@ def main():
         # 无论成功失败，都清理临时目录
         if os.path.exists(TEMP_DIR):
             shutil.rmtree(TEMP_DIR, ignore_errors=True)
-            print(f"\n✅ 临时目录已清理：{TEMP_DIR}")
+            print(f"\n✅ 临时目录已清理：temp_download")
 
 
 if __name__ == "__main__":
