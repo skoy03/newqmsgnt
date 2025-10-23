@@ -3,7 +3,7 @@ name: Auto Update from Releases
 on:
   schedule:
     # 每天UTC时间0点运行（北京时间8点）
-    - cron: '0 0 * * *'
+    - cron: '0 16 * * *'
   workflow_dispatch:
 
 jobs:
