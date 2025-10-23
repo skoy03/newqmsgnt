@@ -36,7 +36,7 @@ def download_and_extract(url):
             os.makedirs(TEMP_DIR)
         
         # 下载文件
-        print(f"Downloading {url}...")
+        print(f"正在下载 {url}...")
         response = requests.get(url)
         response.raise_for_status()  # 检查HTTP错误
         
@@ -45,7 +45,7 @@ def download_and_extract(url):
             f.write(response.content)
         
         # 解压文件
-        print(f"Extracting {zip_path}...")
+        print(f"正在解压 {zip_path}...")
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             # 获取zip文件中的根目录名
             root_dir = os.path.commonprefix(zip_ref.namelist()).rstrip('/')
@@ -55,7 +55,7 @@ def download_and_extract(url):
         
         extracted_dir = os.path.join(TEMP_DIR, root_dir)
         if not os.path.exists(extracted_dir):
-            raise FileNotFoundError(f"Extracted directory not found: {extracted_dir}")
+            raise FileNotFoundError(f"未找到解压目录: {extracted_dir}")
             
         return extracted_dir
         
@@ -88,7 +88,7 @@ def update_repository(extracted_dir, release_info):
         if os.path.exists(dst_dockerfile):
             with open(dst_dockerfile, 'r') as f:
                 if f.read() == modified_content:
-                    print("Dockerfile is up to date, no changes needed.")
+                    print("Dockerfile已为最新版本，无需修改。")
                     return False
         
         # 写入修改后的内容
@@ -96,9 +96,9 @@ def update_repository(extracted_dir, release_info):
             f.write(modified_content)
         
         has_update = True
-        print("Dockerfile updated successfully with custom image source.")
+        print("Dockerfile已成功更新（含自定义镜像源）。")
     else:
-        print("No Dockerfile found in the downloaded package.")
+        print("下载的压缩包中未找到Dockerfile。")
     
     # 清理临时文件
     shutil.rmtree(TEMP_DIR)
@@ -109,7 +109,7 @@ def git_commit_and_push(release_info):
     """提交更改到Git仓库"""
     repo = Repo(REPO_PATH)
     repo.git.add("--all")
-    repo.index.commit(f"Auto update to {release_info['tag_name']}")
+    repo.index.commit(f"自动更新至 {release_info['tag_name']}")
     
     # 确保使用正确的远程URL和认证
     origin = repo.remote(name="origin")
@@ -118,7 +118,7 @@ def git_commit_and_push(release_info):
     try:
         origin.push()
     except Exception as e:
-        print(f"Push failed: {str(e)}")
+        print(f"推送失败: {str(e)}")
         raise
 
 def check_local_version():
@@ -138,12 +138,12 @@ def update_local_version(tag_name):
 def main():
     release_info = get_latest_release()
     if release_info:
-        print(f"Found latest release: {release_info['tag_name']}")
+        print(f"发现最新版本: {release_info['tag_name']}")
         
         # 检查版本是否一致
         local_version = check_local_version()
         if local_version == release_info['tag_name']:
-            print("Local version is up to date, skipping update.")
+            print("本地版本已为最新，跳过更新。")
             return
             
         extracted_dir = download_and_extract(release_info["download_url"])
@@ -152,11 +152,11 @@ def main():
         if has_update:
             update_local_version(release_info['tag_name'])  # 更新本地版本记录
             git_commit_and_push(release_info)
-            print("Update completed successfully!")
+            print("更新已成功完成！")
         else:
-            print("No changes detected, skipping update.")
+            print("未检测到变更，跳过更新。")
     else:
-        print("Failed to find the latest release.")
+        print("获取最新版本失败。")
 
 if __name__ == "__main__":
     main()
