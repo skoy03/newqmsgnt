@@ -92,9 +92,9 @@ def write_log_file(cloud_info, result):
     current_bj_time = utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")
     
     log_content = f"""==================== QmsgNtClient 版本更新日志 ====================
-更新触发时间：{current_bj_time}（北京时间，UTC+8）
+更新触发时间：{current_bj_time}
 云端最新版本：{cloud_info.get("tag_name", "未知版本")}
-云端发布时间：{beijing_publish_time}（北京时间，UTC+8）
+云端发布时间：{beijing_publish_time}
 更新执行结果：{result}
 云端更新说明：
 {cloud_info.get("release_body", "无更新说明").strip()}
@@ -181,7 +181,7 @@ def git_commit_push(cloud_tag):
         files_to_add = [VERSION_FILE, LOG_FILE, os.path.join(REPO_PATH, "Dockerfile")]
         repo.git.add(files_to_add)
         
-        commit_msg = f"Auto update to {cloud_tag} (BJ time: {utc_to_beijing().strftime('%Y-%m-%d %H:%M:%S')})"
+        commit_msg = f"Auto update to {cloud_tag} (update time: {utc_to_beijing().strftime('%Y-%m-%d %H:%M:%S')})"
         repo.index.commit(commit_msg)
         
         github_token = os.getenv("GITHUB_TOKEN")
@@ -201,7 +201,7 @@ def main():
     # 关键：获取当前北京时间并显示
     current_bj_time = utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")
     print("="*60)
-    print(f"QmsgNtClient 版本同步脚本启动（{current_bj_time}，北京时间 UTC+8）")  # 这里已转换为北京时间
+    print(f"QmsgNtClient 版本同步脚本启动（更新日期：{current_bj_time}）")  # 这里已转换为北京时间
     print(f"仓库根目录：{REPO_PATH}")
     print("="*60)
     
@@ -216,7 +216,7 @@ def main():
         with open(VERSION_FILE, "r", encoding="utf-8") as f:
             local_version = f.read().strip()
     
-    print(f"\n【版本对比】（北京时间 {current_bj_time}）")
+    print(f"\n【版本对比】（{current_bj_time}）")
     print(f"本地版本：{local_version or '无'}")
     print(f"云端版本：{cloud_info['tag_name']}")
     
@@ -237,7 +237,7 @@ def main():
         if version_ok and log_ok:
             if git_commit_push(cloud_info["tag_name"]):
                 write_log_file(cloud_info, "成功：已同步到远程仓库")
-                print("\n✅ 全部流程完成（北京时间：{}）".format(utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")))
+                print("\n✅ 全部流程完成（执行日期：{}）".format(utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")))
     except Exception as e:
         write_log_file(cloud_info, f"失败：{str(e)}")
         print(f"❌ 流程终止：{str(e)}")
