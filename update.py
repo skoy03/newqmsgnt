@@ -130,29 +130,36 @@ def download_and_extract(download_url):
         if not os.path.exists(zip_path) or os.path.getsize(zip_path) == 0:
             raise Exception("压缩包为空")
         
+        # 解压时不指定根目录，直接解压到 TEMP_DIR，避免路径识别偏差
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            root_dir = os.path.commonprefix(zip_ref.namelist()).rstrip("/") or "extracted_files"
-            zip_ref.extractall(os.path.join(TEMP_DIR, root_dir))
+            zip_ref.extractall(TEMP_DIR)
         
-        extracted_dir = os.path.join(TEMP_DIR, root_dir)
-        print(f"✅ 解压完成：{extracted_dir}")
-        return extracted_dir
+        print(f"✅ 解压完成：{TEMP_DIR}（所有文件已提取到临时目录）")
+        return TEMP_DIR  # 返回临时目录根路径，后续在此目录下搜索 Dockerfile
     except Exception as e:
         print(f"❌ 下载/解压失败：{str(e)}")
         shutil.rmtree(TEMP_DIR, ignore_errors=True)
         raise
 
 
-def update_dockerfile(extracted_dir):
-    """更新 Dockerfile（修复路径拼接错误）"""
-    # 直接使用解压目录（extracted_dir 即 qmsgnt 文件夹）拼接 Dockerfile，无需额外加 qmsgnt
-    src_docker = os.path.join(extracted_dir, "Dockerfile")
+def update_dockerfile(search_dir):
+    """更新 Dockerfile（遍历所有子目录查找，解决路径不固定问题）"""
     dst_docker = os.path.join(REPO_PATH, "Dockerfile")
+    src_docker = None
+
+    # 遍历临时目录下所有文件，找到第一个 Dockerfile
+    for root, dirs, files in os.walk(search_dir):
+        if "Dockerfile" in files:
+            src_docker = os.path.join(root, "Dockerfile")
+            print(f"✅ 找到 Dockerfile：{src_docker}")
+            break  # 找到第一个即可（避免多个 Dockerfile 冲突）
     
-    if not os.path.exists(src_docker):
-        print(f"❌ 未找到云端 Dockerfile：{src_docker}")
+    # 未找到 Dockerfile 的处理
+    if not src_docker:
+        print(f"❌ 在临时目录 {search_dir} 及其所有子目录中，未找到 Dockerfile")
         return False
     
+    # 读取并修改 Dockerfile（替换基础镜像）
     try:
         with open(src_docker, "r", encoding="utf-8") as f:
             modified_content = f.read().replace(
@@ -160,18 +167,20 @@ def update_dockerfile(extracted_dir):
                 "FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12"
             )
     except Exception as e:
-        print(f"❌ 处理 Dockerfile 失败：{str(e)}")
+        print(f"❌ 读取/修改 Dockerfile 失败：{str(e)}")
         return False
     
+    # 检查本地 Dockerfile 是否需要更新（内容一致则跳过）
     if os.path.exists(dst_docker):
         with open(dst_docker, "r", encoding="utf-8") as f:
             if f.read() == modified_content:
-                print("✅ Dockerfile 无需更新")
+                print("✅ Dockerfile 内容无变化，无需更新")
                 return False
     
+    # 写入更新后的 Dockerfile 到仓库目录
     with open(dst_docker, "w", encoding="utf-8") as f:
         f.write(modified_content)
-    print(f"✅ Dockerfile 已更新")
+    print(f"✅ Dockerfile 已更新到仓库目录：{dst_docker}")
     return True
 
 
@@ -203,6 +212,7 @@ def main():
     current_bj_time = utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")
     print("="*60)
     print(f"QmsgNtClient 版本同步脚本启动（运行时间：{current_bj_time}）")  # 这里已转换为北京时间
+    print(f"仓库根目录：{REPO_PATH}")
     print("="*60)
     
     cloud_info = get_cloud_version()
@@ -229,21 +239,27 @@ def main():
         return
     
     try:
-        extracted_dir = download_and_extract(cloud_info["download_url"])
-        docker_updated = update_dockerfile(extracted_dir)
+        # 1. 下载并解压文件（返回临时目录根路径）
+        temp_dir = download_and_extract(cloud_info["download_url"])
+        # 2. 查找并更新 Dockerfile（传入临时目录根路径）
+        docker_updated = update_dockerfile(temp_dir)
+        # 3. 生成版本文件和日志（待同步状态）
         version_ok = write_version_file(cloud_info["tag_name"])
         log_ok = write_log_file(cloud_info, "待同步")
         
+        # 4. 提交推送（只要版本和日志生成成功，就执行推送）
         if version_ok and log_ok:
             if git_commit_push(cloud_info["tag_name"]):
-                write_log_file(cloud_info, "成功：已同步到远程仓库")
+                write_log_file(cloud_info, "成功：已同步到远程仓库（Dockerfile状态：" + ("更新完成" if docker_updated else "未找到/未更新") + "）")
                 print("\n✅ 全部流程完成（执行时间：{}）".format(utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")))
     except Exception as e:
         write_log_file(cloud_info, f"失败：{str(e)}")
         print(f"❌ 流程终止：{str(e)}")
     finally:
+        # 无论成功失败，都清理临时目录
         if os.path.exists(TEMP_DIR):
             shutil.rmtree(TEMP_DIR, ignore_errors=True)
+            print(f"\n✅ 临时目录已清理：{TEMP_DIR}")
 
 
 if __name__ == "__main__":
