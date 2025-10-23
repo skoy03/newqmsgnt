@@ -198,8 +198,8 @@ def main():
         print("\n✅ 版本一致，无需更新")
         write_log_file(cloud_info, "成功：版本一致")
         if not local_version:
+            # 首次无版本文件时，统一提交版本文件和日志
             write_version_file(cloud_info["tag_name"])
-            # 处理首次无版本文件的情况
             repo = Repo(REPO_PATH)
             repo.git.add([VERSION_FILE, LOG_FILE])
             repo.index.commit(f"初始化版本文件：{cloud_info['tag_name']}")
@@ -219,32 +219,33 @@ def main():
         if not version_ok:
             raise Exception("版本文件生成失败")
         
-        # 4. 初始化Git仓库
+        # 4. 生成最终状态日志（此时已确认前面步骤成功，直接写成功状态）
+        log_result = f"成功：已同步到远程仓库（Dockerfile状态：{'更新完成' if docker_updated else '未找到/未更新'}）"
+        log_ok = write_log_file(cloud_info, log_result)
+        if not log_ok:
+            raise Exception("日志文件生成失败")
+        
+        # 5. 统一提交所有文件（版本+Dockerfile+日志）
         repo = Repo(REPO_PATH)
         github_token = os.getenv("GITHUB_TOKEN")
         github_repo = os.getenv("GITHUB_REPOSITORY")
         origin = repo.remote("origin")
         origin.set_url(f"https://x-access-token:{github_token}@github.com/{github_repo}.git")
         
-        # 5. 首次提交（不含最终日志）
-        files_to_add = [VERSION_FILE, os.path.join(REPO_PATH, "Dockerfile")]
+        files_to_add = [
+            VERSION_FILE, 
+            os.path.join(REPO_PATH, "Dockerfile"),
+            LOG_FILE
+        ]
         repo.git.add(files_to_add)
         commit_msg = f"自动更新到 {cloud_info['tag_name']} (更新时间: {utc_to_beijing().strftime('%Y-%m-%d %H:%M:%S')})"
         repo.index.commit(commit_msg)
         origin.push(force=True)
-        print("✅ 首次Git推送成功（不含最终日志）")
-        
-        # 6. 生成成功状态日志并二次提交
-        log_result = f"成功：已同步到远程仓库（Dockerfile状态：{'更新完成' if docker_updated else '未找到/未更新'}）"
-        log_ok = write_log_file(cloud_info, log_result)
-        if log_ok:
-            repo.git.add(LOG_FILE)
-            repo.index.commit(f"更新 {cloud_info['tag_name']} 版本同步日志")
-            origin.push(force=True)
-            print("✅ 日志更新并二次推送成功")
+        print("✅ Dockerfile更新完成！")
         
         print("\n✅ 全部流程完成（执行时间：{}）".format(utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")))
     except Exception as e:
+        # 异常时写入失败日志（不提交，仅本地生成）
         write_log_file(cloud_info, f"失败：{str(e)}")
         print(f"❌ 流程终止：{str(e)}")
     finally:
