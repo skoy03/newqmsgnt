@@ -1,5 +1,4 @@
-FROM node:20.12
-MAINTAINER DIEYI from NapCatQQ
+FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'Acquire::https::Verify-Peer "false";' >> /etc/apt/apt.conf.d/99noverify
@@ -42,7 +41,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /usr/src/app
 
-RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://ghfast.top/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v$(curl https://fastly.jsdelivr.net/gh/1244453393/QmsgNtClient-NapCatQQ@main/package.json | grep '"version":' | sed -E 's/.*([0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}).*/\1/')/QmsgNtClient-NapCatQQ.zip
+RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://gh-proxy.com/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v$(curl https://fastly.jsdelivr.net/gh/1244453393/QmsgNtClient-NapCatQQ@main/package.json | grep '"version":' | sed -E 's/.*([0-9]{1,}\.[0-9]{1,}\.[0-9]{1,}).*/\1/')/QmsgNtClient-NapCatQQ.zip
 
 RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d ./QmsgNtClient-NapCatQQ
 RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d /tmp/QmsgNtClient-NapCatQQ
@@ -50,7 +49,7 @@ RUN unzip -o /tmp/QmsgNtClient-NapCatQQ.zip -d /tmp/QmsgNtClient-NapCatQQ
 COPY start.sh ./start.sh
 
 RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-    curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/5aa2d8d6/linuxqq_3.2.17-34740_${arch}.deb && \
+    curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/c773cdf7/linuxqq_3.2.19-39038_${arch}.deb && \
     dpkg -i --force-depends linuxqq.deb && rm linuxqq.deb && \
     chmod +x start.sh && \
     echo "(async () => {await import('file:///usr/src/app/QmsgNtClient-NapCatQQ/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js && \
