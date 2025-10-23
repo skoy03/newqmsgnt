@@ -144,7 +144,8 @@ def download_and_extract(download_url):
 
 
 def update_dockerfile(extracted_dir):
-    """更新 Dockerfile"""
+    """更新 Dockerfile（修复路径拼接错误）"""
+    # 直接使用解压目录（extracted_dir 即 qmsgnt 文件夹）拼接 Dockerfile，无需额外加 qmsgnt
     src_docker = os.path.join(extracted_dir, "Dockerfile")
     dst_docker = os.path.join(REPO_PATH, "Dockerfile")
     
