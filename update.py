@@ -220,7 +220,7 @@ def main():
             raise Exception("版本文件生成失败")
         
         # 4. 生成最终状态日志（此时已确认前面步骤成功，直接写成功状态）
-        log_result = f"{'更新完成' if docker_updated else '未找到/未更新'}"
+        log_result = f"{'更新完成' if docker_updated else '无需更新'}"
         log_ok = write_log_file(cloud_info, log_result)
         if not log_ok:
             raise Exception("日志文件生成失败")
