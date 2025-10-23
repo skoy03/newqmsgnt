@@ -134,7 +134,7 @@ def download_and_extract(download_url):
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(TEMP_DIR)
         
-        print(f"✅ 解压完成：{TEMP_DIR}（所有文件已提取到临时目录）")
+        print(f"✅ 解压完成：temp_download（所有文件已提取到临时目录）")
         return TEMP_DIR  # 返回临时目录根路径，后续在此目录下搜索 Dockerfile
     except Exception as e:
         print(f"❌ 下载/解压失败：{str(e)}")
@@ -212,7 +212,6 @@ def main():
     current_bj_time = utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")
     print("="*60)
     print(f"QmsgNtClient 版本同步脚本启动（运行时间：{current_bj_time}）")  # 这里已转换为北京时间
-    print(f"仓库根目录：{REPO_PATH}")
     print("="*60)
     
     cloud_info = get_cloud_version()
