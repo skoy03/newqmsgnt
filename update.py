@@ -113,7 +113,7 @@ def download_and_extract(download_url):
         os.makedirs(TEMP_DIR, exist_ok=True)
         os.chmod(TEMP_DIR, 0o777)
         zip_path = os.path.join(TEMP_DIR, TARGET_FILE)
-        
+
         print(f"开始下载：{download_url}")
         response = requests.get(download_url, timeout=30, stream=True)
         response.raise_for_status()
@@ -121,13 +121,17 @@ def download_and_extract(download_url):
             for chunk in response.iter_content(chunk_size=1024*1024):
                 if chunk:
                     f.write(chunk)
-        
+
         if not os.path.exists(zip_path) or os.path.getsize(zip_path) == 0:
             raise Exception("压缩包为空")
-        
-        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+
+        renamed_zip = os.path.join(TEMP_DIR, "QmsgNtClient-NapCatQQ.zip")
+        shutil.move(zip_path, renamed_zip)
+        print(f"已重命名为：QmsgNtClient-NapCatQQ.zip")
+
+        with zipfile.ZipFile(renamed_zip, "r") as zip_ref:
             zip_ref.extractall(TEMP_DIR)
-        
+
         print(f"✅ 解压完成：temp_download（所有文件已提取到临时目录）")
         return TEMP_DIR
     except Exception as e:
