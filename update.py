@@ -141,40 +141,39 @@ def download_and_extract(download_url):
 
 
 def update_dockerfile(search_dir):
-    """更新 Dockerfile（遍历所有子目录查找）"""
-    dst_docker = os.path.join(REPO_PATH, "Dockerfile")
-    src_docker = None
+    """更新 Dockerfile：直接替换镜像源为阿里云"""
+    dockerfile_path = os.path.join(REPO_PATH, "Dockerfile")
 
-    for root, dirs, files in os.walk(search_dir):
-        if "Dockerfile" in files:
-            src_docker = os.path.join(root, "Dockerfile")
-            print(f"✅ 找到 Dockerfile：qmsgnt/Dockerfile")
-            break
-    
-    if not src_docker:
-        print(f"❌ 在临时目录 {search_dir} 及其所有子目录中，未找到 Dockerfile")
+    if not os.path.exists(dockerfile_path):
+        print(f"❌ 找不到 Dockerfile")
         return False
-    
+
     try:
-        with open(src_docker, "r", encoding="utf-8") as f:
-            modified_content = f.read().replace(
-                "FROM node:20.12",
-                "FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12"
-            )
+        with open(dockerfile_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # 替换镜像源
+        old_from = "FROM node:20.12"
+        new_from = "FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12"
+
+        if new_from in content:
+            print("✅ Dockerfile 已经使用阿里云镜像，无需更新")
+            return False
+
+        if old_from not in content:
+            print("⚠️ Dockerfile 中没有找到预期的 FROM 语句，跳过更新")
+            return False
+
+        modified_content = content.replace(old_from, new_from)
+
+        with open(dockerfile_path, "w", encoding="utf-8") as f:
+            f.write(modified_content)
+
+        print(f"✅ Dockerfile 已更新为阿里云镜像源")
+        return True
     except Exception as e:
-        print(f"❌ 读取/修改 Dockerfile 失败：{str(e)}")
+        print(f"❌ 更新 Dockerfile 失败：{str(e)}")
         return False
-    
-    if os.path.exists(dst_docker):
-        with open(dst_docker, "r", encoding="utf-8") as f:
-            if f.read() == modified_content:
-                print("✅ Dockerfile 内容无变化，无需更新")
-                return False
-    
-    with open(dst_docker, "w", encoding="utf-8") as f:
-        f.write(modified_content)
-    print(f"✅ Dockerfile 已更新到仓库目录：newqmsgnt/Dockerfile")
-    return True
 
 
 def main():
