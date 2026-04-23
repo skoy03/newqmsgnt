@@ -7,7 +7,7 @@ from git import Repo, GitCommandError
 from datetime import datetime, timedelta
 
 # 配置信息
-REPO_API = "https://api.github.com/repos/1244453393/QmsgNtClient-NapCatQQ/releases/latest"
+REPO_API = "https://api.github.com/repos/1244453393/QmsgNtClient-NapCatQQ/releases/tags/v1.0.21"
 TARGET_FILE = "Linux-Docker.zip"
 REPO_PATH = os.getenv("GITHUB_WORKSPACE", os.getcwd())  # GitHub Actions 仓库目录
 TEMP_DIR = os.path.join(REPO_PATH, "temp_download")
