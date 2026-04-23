@@ -215,6 +215,14 @@ def main():
     try:
         # 1. 下载并解压文件
         temp_dir = download_and_extract(cloud_info["download_url"])
+
+        # 1.5 将重命名后的 zip 文件复制到仓库根目录（供 Dockerfile COPY 使用）
+        renamed_zip = os.path.join(temp_dir, "QmsgNtClient-NapCatQQ.zip")
+        dst_zip = os.path.join(REPO_PATH, "QmsgNtClient-NapCatQQ.zip")
+        if os.path.exists(renamed_zip):
+            shutil.copy(renamed_zip, dst_zip)
+            print(f"✅ 已复制 zip 到仓库根目录：{dst_zip}")
+
         # 2. 更新 Dockerfile
         docker_updated = update_dockerfile(temp_dir)
         # 3. 生成版本文件
@@ -237,8 +245,9 @@ def main():
         origin.set_url(f"https://x-access-token:{github_token}@github.com/{github_repo}.git")
         
         files_to_add = [
-            VERSION_FILE, 
+            VERSION_FILE,
             os.path.join(REPO_PATH, "Dockerfile"),
+            os.path.join(REPO_PATH, "QmsgNtClient-NapCatQQ.zip"),
             LOG_FILE
         ]
         repo.git.add(files_to_add)
