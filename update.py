@@ -137,31 +137,24 @@ def download_and_extract(download_url):
 
 
 def update_dockerfile(search_dir):
-    """更新 Dockerfile：从临时目录查找并替换镜像源"""
-    src_dockerfile = None
+    """更新 Dockerfile：从临时目录查找并替换镜像源，固定为v1.0.21版本"""
+    dst_dockerfile = os.path.join(REPO_PATH, "Dockerfile")
     
-    # 从临时目录中查找Dockerfile
-    for root, dirs, files in os.walk(search_dir):
-        if "Dockerfile" in files:
-            src_dockerfile = os.path.join(root, "Dockerfile")
-            print(f"✅ 在临时目录找到 Dockerfile：{src_dockerfile}")
-            break
-
-    if not src_dockerfile:
-        print(f"❌ 在临时目录未找到 Dockerfile")
-        return False
-
     try:
-        with open(src_dockerfile, "r", encoding="utf-8") as f:
+        with open(dst_dockerfile, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # 替换镜像源
+        # 1. 替换镜像源
         old_from = "FROM node:20.12"
         new_from = "FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12"
         modified_content = content.replace(old_from, new_from)
+        
+        # 2. 固定下载链接为v1.0.21版本
+        old_download = "RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://gh-proxy.com/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v$(curl https://fastly.jsdelivr.net/gh/1244453393/QmsgNtClient-NapCatQQ@main/package.json | grep '\"version\":' | sed -E 's/.*([0-9]{1,}\\.[0-9]{1,}\\.[0-9]{1,}).*/\\1/')/QmsgNtClient-NapCatQQ.zip"
+        new_download = "RUN curl -L -o /tmp/QmsgNtClient-NapCatQQ.zip https://gh-proxy.com/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v1.0.21/QmsgNtClient-NapCatQQ.zip"
+        modified_content = modified_content.replace(old_download, new_download)
 
         # 检查是否有变化
-        dst_dockerfile = os.path.join(REPO_PATH, "Dockerfile")
         if os.path.exists(dst_dockerfile):
             with open(dst_dockerfile, "r", encoding="utf-8") as f:
                 existing_content = f.read()
@@ -172,7 +165,7 @@ def update_dockerfile(search_dir):
         with open(dst_dockerfile, "w", encoding="utf-8") as f:
             f.write(modified_content)
 
-        print(f"✅ Dockerfile 已更新")
+        print(f"✅ Dockerfile 已更新（固定为v1.0.21版本）")
         return True
     except Exception as e:
         print(f"❌ 更新 Dockerfile 失败：{str(e)}")
