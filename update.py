@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 # 配置信息
 REPO_API = "https://api.github.com/repos/1244453393/QmsgNtClient-NapCatQQ/releases/latest"
-TARGET_FILE = "QmsgNtClient-NapCatQQ-Linux-Docker_amd64.zip"
+TARGET_FILE = "Linux-Docker.zip"
 REPO_PATH = os.getenv("GITHUB_WORKSPACE", os.getcwd())  # GitHub Actions 仓库目录
 TEMP_DIR = os.path.join(REPO_PATH, "temp_download")
 VERSION_FILE = os.path.join(REPO_PATH, "version.txt")
@@ -125,11 +125,7 @@ def download_and_extract(download_url):
         if not os.path.exists(zip_path) or os.path.getsize(zip_path) == 0:
             raise Exception("压缩包为空")
 
-        renamed_zip = os.path.join(TEMP_DIR, "QmsgNtClient-NapCatQQ.zip")
-        shutil.move(zip_path, renamed_zip)
-        print(f"已重命名为：QmsgNtClient-NapCatQQ.zip")
-
-        with zipfile.ZipFile(renamed_zip, "r") as zip_ref:
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(TEMP_DIR)
 
         print(f"✅ 解压完成：temp_download（所有文件已提取到临时目录）")
@@ -141,35 +137,42 @@ def download_and_extract(download_url):
 
 
 def update_dockerfile(search_dir):
-    """更新 Dockerfile：直接替换镜像源为阿里云"""
-    dockerfile_path = os.path.join(REPO_PATH, "Dockerfile")
+    """更新 Dockerfile：从临时目录查找并替换镜像源"""
+    src_dockerfile = None
+    
+    # 从临时目录中查找Dockerfile
+    for root, dirs, files in os.walk(search_dir):
+        if "Dockerfile" in files:
+            src_dockerfile = os.path.join(root, "Dockerfile")
+            print(f"✅ 在临时目录找到 Dockerfile：{src_dockerfile}")
+            break
 
-    if not os.path.exists(dockerfile_path):
-        print(f"❌ 找不到 Dockerfile")
+    if not src_dockerfile:
+        print(f"❌ 在临时目录未找到 Dockerfile")
         return False
 
     try:
-        with open(dockerfile_path, "r", encoding="utf-8") as f:
+        with open(src_dockerfile, "r", encoding="utf-8") as f:
             content = f.read()
 
         # 替换镜像源
         old_from = "FROM node:20.12"
         new_from = "FROM registry.cn-guangzhou.aliyuncs.com/qmsgnt/node:20.12"
-
-        if new_from in content:
-            print("✅ Dockerfile 已经使用阿里云镜像，无需更新")
-            return False
-
-        if old_from not in content:
-            print("⚠️ Dockerfile 中没有找到预期的 FROM 语句，跳过更新")
-            return False
-
         modified_content = content.replace(old_from, new_from)
 
-        with open(dockerfile_path, "w", encoding="utf-8") as f:
+        # 检查是否有变化
+        dst_dockerfile = os.path.join(REPO_PATH, "Dockerfile")
+        if os.path.exists(dst_dockerfile):
+            with open(dst_dockerfile, "r", encoding="utf-8") as f:
+                existing_content = f.read()
+                if existing_content == modified_content:
+                    print("✅ Dockerfile 内容无变化，无需更新")
+                    return False
+
+        with open(dst_dockerfile, "w", encoding="utf-8") as f:
             f.write(modified_content)
 
-        print(f"✅ Dockerfile 已更新为阿里云镜像源")
+        print(f"✅ Dockerfile 已更新")
         return True
     except Exception as e:
         print(f"❌ 更新 Dockerfile 失败：{str(e)}")
@@ -215,13 +218,6 @@ def main():
         # 1. 下载并解压文件
         temp_dir = download_and_extract(cloud_info["download_url"])
 
-        # 1.5 将重命名后的 zip 文件复制到仓库根目录（供 Dockerfile COPY 使用）
-        renamed_zip = os.path.join(temp_dir, "QmsgNtClient-NapCatQQ.zip")
-        dst_zip = os.path.join(REPO_PATH, "QmsgNtClient-NapCatQQ.zip")
-        if os.path.exists(renamed_zip):
-            shutil.copy(renamed_zip, dst_zip)
-            print(f"✅ 已复制 zip 到仓库根目录：{dst_zip}")
-
         # 2. 更新 Dockerfile
         docker_updated = update_dockerfile(temp_dir)
         # 3. 生成版本文件
@@ -246,7 +242,6 @@ def main():
         files_to_add = [
             VERSION_FILE,
             os.path.join(REPO_PATH, "Dockerfile"),
-            os.path.join(REPO_PATH, "QmsgNtClient-NapCatQQ.zip"),
             LOG_FILE
         ]
         repo.git.add(files_to_add)
