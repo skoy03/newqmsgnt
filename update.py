@@ -137,11 +137,23 @@ def download_and_extract(download_url):
 
 
 def update_dockerfile(search_dir):
-    """更新 Dockerfile：从临时目录查找并替换镜像源，固定为v1.0.21版本"""
+    """更新 Dockerfile：从临时目录获取Dockerfile，修改后保存"""
     dst_dockerfile = os.path.join(REPO_PATH, "Dockerfile")
+    src_dockerfile = None
+    
+    # 从临时目录中查找Dockerfile
+    for root, dirs, files in os.walk(search_dir):
+        if "Dockerfile" in files:
+            src_dockerfile = os.path.join(root, "Dockerfile")
+            print(f"✅ 在临时目录找到 Dockerfile：{src_dockerfile}")
+            break
+    
+    if not src_dockerfile:
+        print(f"❌ 在临时目录未找到 Dockerfile")
+        return False
     
     try:
-        with open(dst_dockerfile, "r", encoding="utf-8") as f:
+        with open(src_dockerfile, "r", encoding="utf-8") as f:
             content = f.read()
 
         # 1. 替换镜像源
@@ -232,16 +244,23 @@ def main():
         origin = repo.remote("origin")
         origin.set_url(f"https://x-access-token:{github_token}@github.com/{github_repo}.git")
         
-        files_to_add = [
-            VERSION_FILE,
-            os.path.join(REPO_PATH, "Dockerfile"),
-            LOG_FILE
-        ]
+        # 只添加存在的文件
+        files_to_add = []
+        for f in [VERSION_FILE, os.path.join(REPO_PATH, "Dockerfile"), LOG_FILE]:
+            if os.path.exists(f):
+                files_to_add.append(f)
+            else:
+                print(f"⚠️  文件不存在，跳过：{f}")
+        
+        if not files_to_add:
+            print("❌ 没有文件需要提交")
+            return
+        
         repo.git.add(files_to_add)
         commit_msg = f"自动更新到 {cloud_info['tag_name']} (更新时间: {utc_to_beijing().strftime('%Y-%m-%d %H:%M:%S')})"
         repo.index.commit(commit_msg)
         origin.push(force=True)
-        print("✅ Dockerfile更新完成！")
+        print("✅ 更新完成并已推送到GitHub！")
         
         print("\n✅ 更新已完成（执行时间：{}）".format(utc_to_beijing().strftime("%Y-%m-%d %H:%M:%S")))
     except Exception as e:
